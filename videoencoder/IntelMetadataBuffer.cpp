@@ -88,7 +88,7 @@ static ShareMemMap* ReadMemObjFromBinder(const Parcel& data, uint32_t sessionfla
             return NULL;
         }
 
-        map->value = (intptr_t)( mem->pointer() + 0x0FFF) & ~0x0FFF;
+        map->value = (intptr_t)( ((char *) mem->pointer()) + 0x0FFF) & ~0x0FFF;
         map->membase = mem;
 
 #ifdef TEST
@@ -251,6 +251,11 @@ status_t IntelBufferSharingService::instantiate(){
     return ret;
 }
 
+static void writeIntPtr(Parcel &data, intptr_t ptr)
+{
+    data.writeInt32((int32_t) ptr);
+}
+
 status_t IntelBufferSharingService::onTransact(uint32_t code, const Parcel& data, Parcel* reply, uint32_t flags) {
 
     //TODO: if pid is int32?
@@ -277,7 +282,7 @@ status_t IntelBufferSharingService::onTransact(uint32_t code, const Parcel& data
             if (map == NULL)
                 return UNKNOWN_ERROR;
 
-            reply->writeIntPtr(map->value);
+            writeIntPtr(*reply, map->value);
 
             return NO_ERROR;
         }
@@ -467,7 +472,7 @@ IMB_Result IntelMetadataBuffer::GetValue(intptr_t& value)
     //TODO: if pid is int32?
     data.writeInt32(pid);
     data.writeInt32(mSessionFlag);
-    data.writeIntPtr(mValue);
+    writeIntPtr(data, mValue);
 
     //do transcation
     if (binder->transact(GET_MEM, data, &reply) != NO_ERROR)
@@ -664,7 +669,6 @@ uint32_t IntelMetadataBuffer::GetMaxBufferSize()
     return 256;
 }
 
-#ifdef INTEL_VIDEO_XPROC_SHARING
 IMB_Result IntelMetadataBuffer::GetSessionFlag(uint32_t& sessionflag)
 {
     sessionflag = mSessionFlag;
@@ -679,9 +683,11 @@ IMB_Result IntelMetadataBuffer::SetSessionFlag(uint32_t sessionflag)
     return IMB_SUCCESS;
 }
 
+#ifdef INTEL_VIDEO_XPROC_SHARING
+
 IMB_Result IntelMetadataBuffer::ShareValue(sp<MemoryBase> mem)
 {
-    mValue = (intptr_t)((intptr_t) ( mem->pointer() + 0x0FFF) & ~0x0FFF);
+    mValue = (intptr_t)((intptr_t) ( ((char *) mem->pointer()) + 0x0FFF) & ~0x0FFF);
 
     if ( !(mSessionFlag & REMOTE_PROVIDER) && !(mSessionFlag & REMOTE_CONSUMER)) //no sharing
         return IMB_SUCCESS;
@@ -700,7 +706,7 @@ IMB_Result IntelMetadataBuffer::ShareValue(sp<MemoryBase> mem)
         //TODO: if pid is int32?
         data.writeInt32(pid);
         data.writeInt32(mSessionFlag);
-        data.writeIntPtr(mValue);
+        writeIntPtr(data, mValue);
 
         //send type/obj (offset/size/MemHeap)
         ShareMemMap smem;
@@ -739,7 +745,7 @@ IMB_Result IntelMetadataBuffer::ShareValue(sp<GraphicBuffer> gbuffer)
     if ( !(mSessionFlag & REMOTE_PROVIDER) && !(mSessionFlag & REMOTE_CONSUMER)) //no sharing
         return IMB_SUCCESS;
 
-    if (mSessionFlag & REMOTE_PROVIDER == 0) //is remote provider
+    if ((mSessionFlag & REMOTE_PROVIDER) == 0) //is remote provider
     {
         sp<IBinder> binder = GetIntelBufferSharingService();
         if (binder == 0)
@@ -752,7 +758,7 @@ IMB_Result IntelMetadataBuffer::ShareValue(sp<GraphicBuffer> gbuffer)
         //TODO: if pid is int32 ?
         data.writeInt32(pid);
         data.writeInt32(mSessionFlag);
-        data.writeIntPtr(mValue);
+        writeIntPtr(data, mValue);
 
         //send value/graphicbuffer obj
         ShareMemMap smem;

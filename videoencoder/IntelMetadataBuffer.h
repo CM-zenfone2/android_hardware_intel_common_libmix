@@ -112,13 +112,10 @@ private:
     uint8_t* mBytes;
     uint32_t mSize;
 
-#ifdef INTEL_VIDEO_XPROC_SHARING
 public:
+#ifdef INTEL_VIDEO_XPROC_SHARING
     IMB_Result ShareValue(sp<MemoryBase> mem);
     IMB_Result ShareValue(sp<GraphicBuffer> gbuffer);
-
-    IMB_Result GetSessionFlag(uint32_t &sessionflag);
-    IMB_Result SetSessionFlag(uint32_t sessionflag);
 
     //Static, for clear context
     static IMB_Result ClearContext(uint32_t sessionflag, bool isProvider = true);
@@ -129,10 +126,13 @@ public:
     static const uint16_t VIDEOEDIT_BASE = 0x3000;
 
    static uint32_t MakeSessionFlag(bool romoteProvider, bool remoteConsumer, uint16_t sindex);
+#endif
+
+    IMB_Result GetSessionFlag(uint32_t &sessionflag);
+    IMB_Result SetSessionFlag(uint32_t sessionflag);
 
 private:
     uint32_t mSessionFlag;
-#endif
 
 };
 

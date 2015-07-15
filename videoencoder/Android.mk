@@ -100,6 +100,7 @@ LOCAL_COPY_HEADERS := \
 ifeq ($(INTEL_VIDEO_XPROC_SHARING),true)
 LOCAL_SHARED_LIBRARIES := liblog libutils libbinder libgui \
                           libui libcutils libhardware
+LOCAL_CFLAGS += -DINTEL_VIDEO_XPROC_SHARING
 endif
 LOCAL_CFLAGS += -Werror
 LOCAL_MODULE_TAGS := optional
