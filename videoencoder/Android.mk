@@ -30,6 +30,8 @@ LOCAL_C_INCLUDES := \
     $(call include-path-for, frameworks-native) \
     $(TARGET_OUT_HEADERS)/pvr
 
+LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
+
 ifeq ($(ENABLE_IMG_GRAPHICS),)
 LOCAL_C_INCLUDES += \
     frameworks/av/media/libstagefright/codecs/m4v_h263/enc/include \
@@ -80,6 +82,8 @@ LOCAL_CFLAGS += -Werror
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE := libva_videoencoder
 
+LOCAL_ADDITIONAL_DEPENDENCIES := $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
+
 include $(BUILD_SHARED_LIBRARY)
 
 # For libintelmetadatabuffer
@@ -88,6 +92,8 @@ include $(BUILD_SHARED_LIBRARY)
 include $(CLEAR_VARS)
 
 VIDEO_ENC_LOG_ENABLE := true
+
+LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
 
 LOCAL_SRC_FILES := \
     IntelMetadataBuffer.cpp
@@ -105,5 +111,7 @@ endif
 LOCAL_CFLAGS += -Werror
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE := libintelmetadatabuffer
+
+LOCAL_ADDITIONAL_DEPENDENCIES := $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
 
 include $(BUILD_SHARED_LIBRARY)
